@@ -6,14 +6,26 @@ import android.graphics.drawable.GradientDrawable
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 fun Context.dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
 fun Context.rootLayout(): LinearLayout = LinearLayout(this).apply {
     orientation = LinearLayout.VERTICAL
     setBackgroundColor(0xFF12161C.toInt())
-    setPadding(dp(20), dp(12), dp(20), dp(20))
-    fitsSystemWindows = true
+    val l = dp(20)
+    val t = dp(12)
+    val r = dp(20)
+    val b = dp(20)
+    setPadding(l, t, r, b)
+    ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
+        val bars = insets.getInsets(
+            WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+        )
+        v.setPadding(l + bars.left, t + bars.top, r + bars.right, b + bars.bottom)
+        insets
+    }
 }
 
 fun Context.heading(text: String): TextView = TextView(this).apply {
