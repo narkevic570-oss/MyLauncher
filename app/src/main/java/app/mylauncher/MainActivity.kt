@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var accountLabel: TextView
     private lateinit var versionLabel: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,10 +38,16 @@ class MainActivity : AppCompatActivity() {
         })
         root.addView(top)
 
+        accountLabel = label("")
+        accountLabel.textSize = 16f
         versionLabel = label("")
         versionLabel.textSize = 16f
+        root.addView(accountLabel)
         root.addView(versionLabel)
 
+        root.addView(button("Аккаунты") {
+            startActivity(Intent(this, AccountsActivity::class.java))
+        })
         root.addView(button("Выбрать / скачать версию") {
             startActivity(Intent(this, VersionsActivity::class.java))
         })
@@ -48,7 +55,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, GameFolderActivity::class.java))
         })
         root.addView(button("▶  Играть") {
-            Toast.makeText(this, "Ядро запуска игры подключим на следующем шаге", Toast.LENGTH_LONG).show()
+            if (Accounts.active(this) == null) {
+                Toast.makeText(this, "Сначала добавь аккаунт", Toast.LENGTH_LONG).show()
+                startActivity(Intent(this, AccountsActivity::class.java))
+            } else {
+                Toast.makeText(this, "Ядро запуска игры подключим на следующем шаге", Toast.LENGTH_LONG).show()
+            }
         })
 
         setContentView(root)
@@ -57,8 +69,11 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (::versionLabel.isInitialized) {
+            val a = Accounts.active(this)
+            accountLabel.text = if (a == null) "Аккаунт не выбран"
+            else "Аккаунт: ${a.name} (${if (a.type == "offline") "оффлайн" else "Microsoft"})"
             val v = Prefs.selected(this)
-            versionLabel.text = if (v.isEmpty()) "Версия не выбрана" else "Выбрано: $v"
+            versionLabel.text = if (v.isEmpty()) "Версия не выбрана" else "Версия: $v"
         }
     }
 }
